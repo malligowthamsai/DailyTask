@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daily Task</title>
+<title>Daily Life Dashboard</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,82 +12,69 @@
 
 <div class="container">
 
-    <!-- HEADER -->
-    <header class="header">
+<header>
 
-        <div class="date">DATE/DAY</div>
+<div class="left">
+<h2 id="todayDate"></h2>
+</div>
 
-        <div class="title">
-            <h1>DAILY TASK</h1>
-            <p>Display Time</p>
-        </div>
+<div class="center">
+<h1>Daily Life Dashboard</h1>
+<p id="clock"></p>
+</div>
 
-        <div class="profile">
-            <div class="circle"></div>
-            <p>Your Name</p>
-        </div>
+<div class="right">
+<div class="profile"></div>
+<p>Gowtham</p>
+</div>
 
-    </header>
+</header>
 
-    <!-- MAIN SECTION -->
-    <div class="main">
+<main>
 
-       <div class="calendar-box">
+<section class="calendarSection">
 
-    <div class="calendar">
+<div class="calendarHeader">
+<button id="prevMonth">‹</button>
+<h3 id="monthYear"></h3>
+<button id="nextMonth">›</button>
+</div>
 
-        <div class="calendar-header">
-            <button id="prev">&#10094;</button>
-            <h3 id="monthYear"></h3>
-            <button id="next">&#10095;</button>
-        </div>
+<div class="weekdays">
+<div>SUN</div>
+<div>MON</div>
+<div>TUE</div>
+<div>WED</div>
+<div>THU</div>
+<div>FRI</div>
+<div>SAT</div>
+</div>
 
-        <div class="days">
-            <div>Sun</div>
-            <div>Mon</div>
-            <div>Tue</div>
-            <div>Wed</div>
-            <div>Thu</div>
-            <div>Fri</div>
-            <div>Sat</div>
-        </div>
+<div id="calendarDays" class="calendarDays"></div>
 
-        <div class="dates" id="dates"></div>
+</section>
 
-    </div>
+<section class="actions">
+
+<button class="action energy">Energy</button>
+<button class="action screen">Screen Time</button>
+<button class="action rule">Your Rule</button>
+<button class="action learn">What You Learned Today</button>
+
+</section>
+
+</main>
+
+<footer>
+
+<p>Time spent here</p>
+<h2 id="sessionTimer">00:00:00 </h2>
+
+</footer>
 
 </div>
 
-        <!-- BUTTON SECTION -->
-        <div class="actions">
-
-            <div class="btn energy">Energy</div>
-
-            <div class="btn screen">Screen Time</div>
-
-            <div class="btn rule">Your Rule</div>
-
-        </div>
-
-    </div>
-
-    <!-- BOTTOM SECTION -->
-    <div class="bottom">
-
-        <div class="pomodoro">
-            <img src="apple.png" alt="pomodoro">
-            <span>Pomodoro</span>
-        </div>
-
-        <div class="learn">
-            What Have you done/ Learn Today
-        </div>
-
-        <p class="time-spent">Display Time you spend here</p>
-
-    </div>
-
-</div>
+<script src="script.js"></script>
 
 </body>
 </html>
