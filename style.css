@@ -163,3 +163,81 @@ margin-top:10px;
 font-size:28px;
 color:#444;
 }
+
+.pomodoroSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 30px 0;
+  position: relative; /* important for absolute positioning */
+}
+.pomodoro-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.pomodoro-btn img {
+  width: 140px; /* bigger tomato */
+  height: auto;
+}
+
+/* Hover effect for tomato */
+.pomodoro-btn:hover {
+  transform: scale(1.15) rotate(-3deg);
+  filter: drop-shadow(0 0 20px rgba(230,57,70,0.6));
+}
+
+/* Start Task label styling */
+.start-label {
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #2a9d8f;
+  background: linear-gradient(45deg, #2a9d8f, #2193b0);
+  padding: 12px 24px;
+  border-radius: 30px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+/* Hover effect when cursor is on tomato OR label */
+.pomodoro-btn:hover + .start-label,
+.start-label:hover {
+  background: linear-gradient(45deg, #ff6b6b, #ffb347);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255,179,71,0.6);
+}
+
+/* Side panel styling */
+.pomodoro-info {
+  display: none; /* hidden by default */
+  position: absolute;
+  top: 50px; /* start aligned with tomato top */
+  left: 30%; /* center relative to tomato */
+  transform: translateX(-10%) translateY(0); /* hidden behind tomato */
+  width: 260px;
+  padding: 18px;
+  background: rgba(128, 128, 128, 0.85); /* transparent grey */
+  color: #ffe6f1; /* pastel pink text */
+  border-radius: 12px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.25);
+  border: none; /* no visible border */
+  backdrop-filter: blur(6px); /* soft fade edges */
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  opacity: 0;
+  z-index: 5; /* sits just behind tomato initially */
+}
+/* Show side panel when hovering on tomato */
+.pomodoro-btn:hover ~ .pomodoro-info {
+  display: block;
+  opacity: 1;
+  transform: translateX(40%) translateY(-110%); /* slides upward from behind */
+}
+
+/* Blur the rest of the page when panel is visible */
+.pomodoro-btn:hover ~ .pomodoro-info ~ * {
+  filter: blur(4px);
+  pointer-events: none;
+}
