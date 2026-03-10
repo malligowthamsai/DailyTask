@@ -1,5 +1,5 @@
-
 // LIVE CLOCK
+
 function updateClock() {
     let now = new Date();
 
