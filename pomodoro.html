@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pomodoro Timer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Default Theme (Pomodoro Red) */
+      --bg-color: #ba4949;
+      --text-color: #ffffff;
+      --btn-bg: rgba(0, 0, 0, 0.1);
+      --btn-active: rgba(0, 0, 0, 0.15);
+      --btn-text: white;
+      --card-bg: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.3);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      transition: background-color 0.5s ease; /* Smooth color transition */
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin-top: 50px;
+    }
+
+    /* --- Tabs Navigation --- */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background-color: var(--btn-bg);
+      border-radius: 6px;
+      padding: 5px;
+      margin-bottom: 30px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--btn-text);
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .tab-btn.active {
+      background-color: var(--card-bg);
+    }
+
+    .tab-btn:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* --- Timer Display --- */
+    .timer-card {
+      background-color: var(--btn-bg);
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    #timer {
+      font-size: 80px;
+      font-weight: 700;
+      margin: 10px 0;
+      cursor: pointer; /* Indicate clickable */
+    }
+
+    .main-btn {
+      background-color: var(--text-color);
+      color: var(--bg-color); /* Text matches background color for contrast */
+      border: none;
+      padding: 12px 40px;
+      font-size: 24px;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: transform 0.1s;
+      margin-top: 10px;
+    }
+
+    .main-btn:active {
+      transform: translateY(2px);
+    }
+
+    /* --- Task Section --- */
+    .tasks-section {
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .tasks-section h3 {
+      margin-bottom: 15px;
+      opacity: 0.9;
+    }
+
+    .task-input-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    #taskInput {
+      background: var(--input-bg);
+      border: none;
+      border-radius: 4px;
+      padding: 10px 15px;
+      color: white;
+      font-family: inherit;
+      width: 70%;
+    }
+
+    #taskInput::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .add-btn {
+      background: var(--btn-bg);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #taskList {
+      list-style: none;
+      padding: 0;
+      text-align: left;
+    }
+
+    #taskList li {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px 15px;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+    
+    .delete-task {
+        background: none;
+        border: none;
+        color: white;
+        opacity: 0.6;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .delete-task:hover {
+        opacity: 1;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Mode Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-mode="pomodoro">Pomodoro</button>
+      <button class="tab-btn" data-mode="shortBreak">Short Break</button>
+      <button class="tab-btn" data-mode="longBreak">Long Break</button>
+    </div>
+
+    <!-- Timer Display -->
+    <div class="timer-card">
+      <div id="timer">25:00</div>
+      <button class="main-btn" id="controlBtn">START</button>
+    </div>
+
+    <!-- Task List -->
+    <div class="tasks-section">
+      <h3>Tasks</h3>
+      <div class="task-input-group">
+        <input type="text" id="taskInput" placeholder="What are you working on?" />
+        <button class="add-btn" id="addTaskBtn">Add</button>
+      </div>
+      <ul id="taskList"></ul>
+    </div>
+  </div>
+
+  <script>
+    // --- Configuration ---
+    const modes = {
+      pomodoro: { time: 25 * 60, color: '#ba4949' },   // Red theme
+      shortBreak: { time: 5 * 60, color: '#38858a' },  // Teal theme
+      longBreak: { time: 15 * 60, color: '#397097' }   // Blue theme
+    };
+
+    let currentMode = 'pomodoro';
+    let timeRemaining = modes[currentMode].time;
+    let timerInterval = null;
+    let isRunning = false;
+
+    // --- DOM Elements ---
+    const timerDisplay = document.getElementById('timer');
+    const controlBtn = document.getElementById('controlBtn');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const taskInput = document.getElementById('taskInput');
+    const addTaskBtn = document.getElementById('addTaskBtn');
+    const taskList = document.getElementById('taskList');
+
+    // --- Helper Functions ---
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(timeRemaining);
+      document.title = `(${formatTime(timeRemaining)}) Pomodoro`;
+    }
+
+    // --- Theme Switching ---
+    function switchMode(mode) {
+      // Stop current timer
+      clearInterval(timerInterval);
+      timerInterval = null;
+      isRunning = false;
+      controlBtn.textContent = 'START';
+
+      // Update State
+      currentMode = mode;
+      timeRemaining = modes[mode].time;
+      
+      // Update UI Theme
+      document.body.style.backgroundColor = modes[mode].color;
+      
+      // Update Tabs
+      tabBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+
+      updateDisplay();
+    }
+
+    // --- Timer Logic ---
+    function startTimer() {
+      if (isRunning) {
+        // Pause
+        clearInterval(timerInterval);
+        controlBtn.textContent = 'START';
+        isRunning = false;
+      } else {
+        // Start
+        timerInterval = setInterval(() => {
+          if (timeRemaining > 0) {
+            timeRemaining--;
+            updateDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            controlBtn.textContent = 'START';
+            alert(`${currentMode.replace(/([A-Z])/g, ' $1').trim()} finished!`);
+          }
+        }, 1000);
+        controlBtn.textContent = 'PAUSE';
+        isRunning = true;
+      }
+    }
+
+    // --- Event Listeners ---
+    
+    // Tab Switching
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchMode(btn.dataset.mode);
+      });
+    });
+
+    // Main Control Button
+    controlBtn.addEventListener('click', startTimer);
+
+    // Task Management
+    addTaskBtn.addEventListener('click', () => {
+      const text = taskInput.value.trim();
+      if (text) {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${text}</span> <button class="delete-task">×</button>`;
+        
+        // Delete task functionality
+        li.querySelector('.delete-task').addEventListener('click', () => {
+          li.remove();
+        });
+
+        taskList.appendChild(li);
+        taskInput.value = '';
+      }
+    });
+
+    taskInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addTaskBtn.click();
+    });
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>
