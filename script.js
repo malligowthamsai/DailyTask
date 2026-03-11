@@ -90,3 +90,6 @@ document.getElementById("nextMonth").onclick=()=>{
 date.setMonth(date.getMonth()+1);
 renderCalendar();
 }
+document.getElementById("startTaskBtn").addEventListener("click", function() {
+  window.location.href = "pomodoro.html";
+});
