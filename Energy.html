@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Energy</title>
+  <style>
+    body {
+      font-family: Segoe UI, sans-serif;
+      background: linear-gradient(120deg, #5cc6a9, #7aa6ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .energy-container {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      width: 450px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(45deg, #ff8c8c, #ffb36b);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #2a9d8f;
+    }
+  </style>
+</head>
+<body>
+  <div class="energy-container">
+    <h2>Daily Energy Performance</h2>
+    <form id="energyForm">
+      <label>Productivity Completed (hrs)</label>
+      <input type="number" id="prodDone" min="0" max="24">
+
+      <label>Social Completed (hrs)</label>
+      <input type="number" id="socialDone" min="0" max="24">
+
+      <label>Sleep Completed (hrs)</label>
+      <input type="number" id="sleepDone" min="0" max="24">
+
+      <button type="submit">Calculate Performance</button>
+    </form>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById("energyForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const rule = JSON.parse(localStorage.getItem("dailyRule"));
+      if(!rule){
+        alert("Please set your rule first!");
+        return;
+      }
+      const prodDone = document.getElementById("prodDone").value;
+      const socialDone = document.getElementById("socialDone").value;
+      const sleepDone = document.getElementById("sleepDone").value;
+
+      let totalRule = (+rule.productivity) + (+rule.social) + (+rule.sleep);
+      let totalDone = (+prodDone) + (+socialDone) + (+sleepDone);
+
+      let percentage = ((totalDone / totalRule) * 100).toFixed(2);
+
+      document.getElementById("result").innerText = `You completed ${percentage}% of your daily goals!`;
+    });
+  </script>
+</body>
+</html>

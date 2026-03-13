@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Rule</title>
+  <style>
+    body {
+      font-family: Segoe UI, sans-serif;
+      background: linear-gradient(120deg, #8ec5fc, #e0c3fc);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .rule-container {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      width: 400px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+      transition: 0.2s;
+    }
+    input:focus {
+      border-color: #7aa6ff;
+      box-shadow: 0 0 8px rgba(122,166,255,0.5);
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(45deg, #7aa6ff, #5cc6a9);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="rule-container">
+    <h2>Set Your Rule</h2>
+    <form id="ruleForm">
+      <label>Productivity (hrs)</label>
+      <input type="number" id="productivity" min="0" max="24">
+
+      <label>Social (hrs)</label>
+      <input type="number" id="social" min="0" max="24">
+
+      <label>Sleep (hrs)</label>
+      <input type="number" id="sleep" min="0" max="24">
+
+      <button type="submit">Save Rule</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("ruleForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const rule = {
+        productivity: document.getElementById("productivity").value,
+        social: document.getElementById("social").value,
+        sleep: document.getElementById("sleep").value
+      };
+      localStorage.setItem("dailyRule", JSON.stringify(rule));
+      alert("Rule saved successfully!");
+    });
+  </script>
+</body>
+</html>
