@@ -93,3 +93,12 @@ renderCalendar();
 document.getElementById("startTaskBtn").addEventListener("click", function() {
   window.location.href = "pomodoro.html";
 });
+document.getElementById("energy").addEventListener("click", function() {
+  window.location.href = "Energy.html";
+});
+document.getElementById("rule").addEventListener("click", function() {
+  window.location.href = "Your-rule.html";
+});
+document.getElementById("done").addEventListener("click", function() {
+  window.location.href = "done.html";
+});
