@@ -27,7 +27,7 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      transition: background-color 0.5s ease; /* Smooth color transition */
+      transition: background-color 0.5s ease;
     }
 
     .container {
@@ -35,6 +35,67 @@
       max-width: 480px;
       margin-top: 50px;
     }
+
+    /* --- Top Right Settings Bar --- */
+    .top-bar {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 100;
+    }
+
+    /* Pomodoro Image & Animation */
+    .pomodoro-img {
+      width: 50px;  /* Default size */
+      height: auto;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    /* Class added by JS when alarm rings */
+    .alarm-active {
+      animation: shakeAndGrow 0.5s infinite;
+    }
+
+    @keyframes shakeAndGrow {
+      0% { transform: scale(1.5) rotate(0deg); }
+      25% { transform: scale(1.6) rotate(5deg); }
+      50% { transform: scale(1.5) rotate(0deg); }
+      75% { transform: scale(1.6) rotate(-5deg); }
+      100% { transform: scale(1.5) rotate(0deg); }
+    }
+
+    /* Split Toggle Button */
+    .toggle-btn-group {
+      display: flex;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.4);
+    }
+
+    .toggle-half {
+      background: transparent;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .toggle-half.active {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .toggle-half:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
 
     /* --- Tabs Navigation --- */
     .tabs {
@@ -79,12 +140,12 @@
       font-size: 80px;
       font-weight: 700;
       margin: 10px 0;
-      cursor: pointer; /* Indicate clickable */
+      cursor: pointer;
     }
 
     .main-btn {
       background-color: var(--text-color);
-      color: var(--bg-color); /* Text matches background color for contrast */
+      color: var(--bg-color);
       border: none;
       padding: 12px 40px;
       font-size: 24px;
@@ -171,9 +232,34 @@
         opacity: 1;
     }
 
+    /* Mobile adjustments for top bar */
+    @media (max-width: 600px) {
+      .top-bar {
+        top: 10px;
+        right: 10px;
+        flex-direction: column-reverse; /* Image on top, buttons below */
+        align-items: flex-end;
+      }
+      .toggle-half {
+        padding: 6px 8px;
+        font-size: 9px;
+      }
+      .pomodoro-img {
+        width: 40px;
+      }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Top Right Settings & Image -->
+  <div class="top-bar">
+    <div class="toggle-btn-group">
+      <button class="toggle-half active" id="btnInfinite">Ring Until Off</button>
+      <button class="toggle-half" id="btnTimed">15s Auto Stop</button>
+    </div>
+    <img src="pomodoro.png" alt="Pomodoro" class="pomodoro-img" id="pomodoroImg">
+  </div>
 
   <div class="container">
     <!-- Mode Tabs -->
@@ -203,15 +289,22 @@
   <script>
     // --- Configuration ---
     const modes = {
-      pomodoro: { time: 25 * 60, color: '#ba4949' },   // Red theme
-      shortBreak: { time: 5 * 60, color: '#38858a' },  // Teal theme
-      longBreak: { time: 15 * 60, color: '#397097' }   // Blue theme
+      pomodoro: { time: 25 * 60, color: '#ba4949' },
+      shortBreak: { time: 5 * 60, color: '#38858a' },
+      longBreak: { time: 15 * 60, color: '#397097' }
     };
 
     let currentMode = 'pomodoro';
     let timeRemaining = modes[currentMode].time;
     let timerInterval = null;
     let isRunning = false;
+
+    // --- NEW: Alarm State ---
+    // 'infinite' = ring until user stops, 'timed' = stop after 15s
+    let alarmMode = 'infinite'; 
+    let audioCtx = null;
+    let alarmInterval = null;
+    let autoStopTimeout = null;
 
     // --- DOM Elements ---
     const timerDisplay = document.getElementById('timer');
@@ -220,6 +313,11 @@
     const taskInput = document.getElementById('taskInput');
     const addTaskBtn = document.getElementById('addTaskBtn');
     const taskList = document.getElementById('taskList');
+    
+    // New DOM Elements
+    const pomodoroImg = document.getElementById('pomodoroImg');
+    const btnInfinite = document.getElementById('btnInfinite');
+    const btnTimed = document.getElementById('btnTimed');
 
     // --- Helper Functions ---
     function formatTime(seconds) {
@@ -233,22 +331,79 @@
       document.title = `(${formatTime(timeRemaining)}) Pomodoro`;
     }
 
+    // --- NEW: Alarm Functions ---
+    function playAlarm() {
+      // Initialize AudioContext
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      // Add visual animation class
+      pomodoroImg.classList.add('alarm-active');
+
+      const beep = () => {
+        if (!audioCtx) return; // Safety check
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.frequency.value = 800;
+        osc.type = 'sine';
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+      };
+
+      // Play immediately and repeat
+      beep();
+      alarmInterval = setInterval(beep, 1000);
+
+      // Handle Auto-Stop Logic
+      if (alarmMode === 'timed') {
+        autoStopTimeout = setTimeout(() => {
+          stopAlarm();
+          // Reset button text if it was on STOP ALARM
+          if (controlBtn.textContent === 'STOP ALARM') {
+             switchMode(currentMode);
+          }
+        }, 15000); // 15 seconds
+      }
+    }
+
+    function stopAlarm() {
+      // Stop sound
+      if (alarmInterval) {
+        clearInterval(alarmInterval);
+        alarmInterval = null;
+      }
+      // Stop auto-stop timer if exists
+      if (autoStopTimeout) {
+        clearTimeout(autoStopTimeout);
+        autoStopTimeout = null;
+      }
+      
+      // Remove visual animation
+      pomodoroImg.classList.remove('alarm-active');
+    }
+
     // --- Theme Switching ---
     function switchMode(mode) {
-      // Stop current timer
       clearInterval(timerInterval);
       timerInterval = null;
       isRunning = false;
+      
+      stopAlarm(); // Stop any ringing
+      
       controlBtn.textContent = 'START';
 
-      // Update State
       currentMode = mode;
       timeRemaining = modes[mode].time;
       
-      // Update UI Theme
       document.body.style.backgroundColor = modes[mode].color;
       
-      // Update Tabs
       tabBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.mode === mode);
       });
@@ -272,8 +427,10 @@
           } else {
             clearInterval(timerInterval);
             isRunning = false;
-            controlBtn.textContent = 'START';
-            alert(`${currentMode.replace(/([A-Z])/g, ' $1').trim()} finished!`);
+            
+            // Trigger Alarm
+            playAlarm();
+            controlBtn.textContent = 'STOP ALARM';
           }
         }, 1000);
         controlBtn.textContent = 'PAUSE';
@@ -291,7 +448,14 @@
     });
 
     // Main Control Button
-    controlBtn.addEventListener('click', startTimer);
+    controlBtn.addEventListener('click', () => {
+      if (controlBtn.textContent === 'STOP ALARM') {
+        stopAlarm();
+        switchMode(currentMode); // Reset timer
+        return;
+      }
+      startTimer();
+    });
 
     // Task Management
     addTaskBtn.addEventListener('click', () => {
@@ -300,7 +464,6 @@
         const li = document.createElement('li');
         li.innerHTML = `<span>${text}</span> <button class="delete-task">×</button>`;
         
-        // Delete task functionality
         li.querySelector('.delete-task').addEventListener('click', () => {
           li.remove();
         });
@@ -312,6 +475,19 @@
 
     taskInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addTaskBtn.click();
+    });
+
+    // NEW: Toggle Switch Listeners
+    btnInfinite.addEventListener('click', () => {
+      alarmMode = 'infinite';
+      btnInfinite.classList.add('active');
+      btnTimed.classList.remove('active');
+    });
+
+    btnTimed.addEventListener('click', () => {
+      alarmMode = 'timed';
+      btnTimed.classList.add('active');
+      btnInfinite.classList.remove('active');
     });
 
     // Initialize
